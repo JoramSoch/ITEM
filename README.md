@@ -9,10 +9,11 @@ An ITEM analysis would usually proceed in two steps:
 2. a) Classify discrete experimental conditions from trial-wise parameter estimates using `ITEM_dec_class` <b>OR</b> <br>
    b) Reconstruct continuous modulator variable from trial-wise parameter estimates using `ITEM_dec_recon`.
 
-Type `help ITEM_fct_name` for information on input parameters of these functions. You may also use the review function by typing `ITEM_review` in order to check intermediate results at any time. The code in this repository references some functionality from the MACS toolbox [3]. If this toolbox is on the path, functions not starting by `ITEM_` are not required.
+Type `help ITEM_fct_name` for information on input parameters of these functions. You may also use the review function by typing `ITEM_review` in order to check intermediate results at any time. The code in this repository references some functionality from the MACS toolbox [4]. If this toolbox is on the path, functions not starting by `ITEM_` are not required.
 
-This software is in beta testing. Future improvements will include searchlight analysis, improved visualization, extended comments and a software manual. Preliminary documentation can be found in an abstract submitted for presentation at the 2019 Annual Meeting of the Organization for Human Brain Mapping (OHBM 2019) [1]. In case of questions on the methodology or issues with the toolbox, please contact the corresponding author [2].
+This software is in beta testing. Future improvements will include searchlight analysis, improved visualization, extended comments and a software manual. Preliminary documentation can be found in an abstract submitted for presentation at the 2019 Annual Meeting of the Organization for Human Brain Mapping (OHBM 2019) [1,2]. In case of questions on the methodology or issues with the toolbox, please contact the corresponding author [3].
 
 [1] https://ww5.aievolution.com/hbm1901/index.cfm?do=abs.viewAbs&subView=1&abs=3967 <br>
-[2] mailto:joram.soch@bccn-berlin.de?subject=ITEM%20toolbox%20inquiry <br>
-[3] https://github.com/JoramSoch/MACS <br>
+[2] https://github.com/JoramSoch/ITEM/blob/master/ITEM_abstract.pdf <br>
+[3] mailto:joram.soch@bccn-berlin.de?subject=ITEM%20toolbox%20inquiry <br>
+[4] https://github.com/JoramSoch/MACS <br>
