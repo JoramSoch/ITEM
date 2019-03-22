@@ -17,7 +17,7 @@ function ITEM_dec_recon(SPM, ROI, c, con, reg)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 30/11/2018, 09:10 (V0.1)
-%  Last edit: 20/12/2018, 05:35 (V0.1)
+%  Last edit: 22/03/2018, 11:40 (V0.2)
 
 
 %=========================================================================%
@@ -201,13 +201,19 @@ for g = 1:s
     
     % Calculate (out-of-sample) correlation coefficients
     %---------------------------------------------------------------------%
-    CCg = diag(corr(Y_true,Y_recon))';
+    CCg = zeros(1,q);
+    for i = 1:q
+        j = find(Y_true(:,i)~=0);
+        CCg(i) = corr(Y_true(j,i),Y_recon(j,i));
+    end;
+    
+    % Save analysis results to struct
+    %---------------------------------------------------------------------%
     ITEM.Sess(g).W  = W_out;
     ITEM.Sess(g).Yt = Y_true;
     ITEM.Sess(g).Yp = Y_pred;
     ITEM.Sess(g).Yr = Y_recon;
     ITEM.Sess(g).CC = CCg;
-    clear CCg
     
 end;
 

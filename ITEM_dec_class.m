@@ -17,7 +17,7 @@ function ITEM_dec_class(SPM, ROI, c, con, reg)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 30/11/2018, 07:15 (V0.1)
-%  Last edit: 20/12/2018, 05:35 (V0.1)
+%  Last edit: 22/03/2018, 12:00 (V0.2)
 
 
 %=========================================================================%
@@ -117,7 +117,7 @@ Finter = spm('FigName','ITEM_dec_class: estimate (1)');
 
 % Augment decoding contrast if necessary
 %-------------------------------------------------------------------------%
-if size(c,1) == 1, c = [(1/2)*(c+1); (-1/2)*(c-1)]; end;
+if size(c,1) == 1, c = [1*(c==1); 1*(c==-1)]; end;
 c = [c, zeros(size(c,1), GLM1.pr(1)-size(c,2))];
 q = size(c,1);
 
@@ -198,20 +198,22 @@ for g = 1:s
     Y_true  = Y_out(1:GLM1.t(g),1:q);
     Y_pred  = W_out * X_out * B_in;
     Y_class = zeros(GLM1.t(g),q);
-    for k = 1:GLM1.t(g)
-        l = find(Y_pred(k,1:q)==max(Y_pred(k,1:q)));
-        Y_class(k,l) = 1;
-    end;
     
     % Calculate (out-of-sample) decoding accuracy
+    %---------------------------------------------------------------------%    
+    for j = find(sum(Y_true,2)>0)'
+        k = find(Y_pred(j,1:q)==max(Y_pred(j,1:q)));
+        Y_class(j,k) = 1;
+    end;
+    DAg = (1/numel(find(sum(Y_true,2)>0))) * sum(diag(Y_true'*Y_class));
+    
+    % Save analysis results to struct
     %---------------------------------------------------------------------%
-    DAg = (1/GLM1.t(g)) * trace(Y_true*Y_class');
     ITEM.Sess(g).W  = W_out;
     ITEM.Sess(g).Yt = Y_true;
     ITEM.Sess(g).Yp = Y_pred;
     ITEM.Sess(g).Yc = Y_class;
     ITEM.Sess(g).DA = DAg;
-    clear DAg
     
 end;
 

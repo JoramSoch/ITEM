@@ -13,7 +13,7 @@ function ITEM_review(SPM, step, what)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 04/12/2018, 13:10 (V0.1)
-%  Last edit: 19/12/2018, 21:15 (V0.1)
+%  Last edit: 22/03/2018, 12:30 (V0.1)
 
 
 %=========================================================================%
@@ -240,7 +240,7 @@ if strcmp(step, 'dec-class')
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+3+4*(h>csd2));
             imagesc(ITEM.Sess(h).V);
             axis square off;
-            title(['"covariance" \Sigma', sprintf(' [%d x %d]', size(ITEM.Sess(h).V))], 'FontSize', 12);
+            title(['"covariance" U', sprintf(' [%d x %d]', size(ITEM.Sess(h).V))], 'FontSize', 12);
         end;
     end;
     
@@ -312,7 +312,7 @@ if strcmp(step, 'dec-recon')
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+3+4*(h>csd2));
             imagesc(ITEM.Sess(h).V);
             axis square off;
-            title(['"covariance" \Sigma', sprintf(' [%d x %d]', size(ITEM.Sess(h).V))], 'FontSize', 12);
+            title(['"covariance" U', sprintf(' [%d x %d]', size(ITEM.Sess(h).V))], 'FontSize', 12);
         end;
     end;
     
