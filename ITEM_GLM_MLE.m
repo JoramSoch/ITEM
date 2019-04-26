@@ -1,7 +1,7 @@
 function [beta_est, sig2_est] = ITEM_GLM_MLE(Y, X, V, msg)
 % _
 % Maximum Likelihood Estimation of General Linear Model
-% FORMAT [beta_est, sig2_est] = ME_GLM(Y, X, V, msg)
+% FORMAT [beta_est, sig2_est] = ITEM_GLM_MLE(Y, X, V, msg)
 % 
 %     Y   - an n x v data matrix of v time series with n data points
 %     X   - an n x p design matrix of p regressors with n data points
@@ -11,7 +11,7 @@ function [beta_est, sig2_est] = ITEM_GLM_MLE(Y, X, V, msg)
 %     beta_est - a p x v matrix (estimated regression coefficients)
 %     sig2_est - a 1 x v vector (estimated residual variance)
 % 
-% FORMAT [beta_est, sig2_est] = ME_GLM(Y, X, V) returns the maximum
+% FORMAT [beta_est, sig2_est] = ITEM_GLM_MLE(Y, X, V) returns the maximum
 % likelihood parameter estimates for a general linear model with data Y,
 % design matrix X, covariance matrix V.
 % 
@@ -19,7 +19,7 @@ function [beta_est, sig2_est] = ITEM_GLM_MLE(Y, X, V, msg)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 29/10/2014, 14:05 (V0.0)
-%  Last edit: 22/11/2018, 05:05 (V0.1)
+%  Last edit: 26/04/2019, 17:35 (V0.2)
 
 
 % Get model dimensions

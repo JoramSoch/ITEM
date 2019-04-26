@@ -1,7 +1,7 @@
 function [h, p, stats] = ITEM_GLM_con(Y, X, V, c, type, alpha, msg)
 % _
 % Contrast-Based Inference for Classical General Linear Model
-% FORMAT [h, p, stats] = ME_GLM_con(beta_est, sig2_est, X, c, type)
+% FORMAT [h, p, stats] = ITEM_GLM_con(Y, X, V, c, type, alpha, msg)
 % 
 %     h     - a 1 x v vector of test results (H0: false; H1: true)
 %     p     - a 1 x v vector of p-values for the t- or F-test
@@ -20,7 +20,7 @@ function [h, p, stats] = ITEM_GLM_con(Y, X, V, c, type, alpha, msg)
 %     alpha - a  scalar indicating the significance level (e.g. 0.05)
 %     msg   - a  string used as a message on the SPM progress bar
 % 
-% FORMAT [h, p, stats] = ME_GLM_con(beta_est, sig2_est, X, c, type, msg)
+% FORMAT [h, p, stats] = ITEM_GLM_con(Y, X, V, c, type, alpha, msg)
 % performns a statistical test indicated by type as well as significance
 % level alpha and specified by the contrast c using the data matrix Y,
 % design matrix X and covariance matrix V; it returns test result h,
@@ -30,7 +30,7 @@ function [h, p, stats] = ITEM_GLM_con(Y, X, V, c, type, alpha, msg)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 29/10/2018, 15:55 (V0.0)
-%  Last edit: 22/11/2018, 05:05 (V0.1)
+%  Last edit: 26/04/2019, 17:30 (V0.2)
 
 
 % Modify contrast if necessary
@@ -67,7 +67,7 @@ d = floor(v/100);
 
 % Estimate model parameters
 %-------------------------------------------------------------------------%
-[beta_est, sig2_est] = ME_GLM(Y, X, V);
+[beta_est, sig2_est] = ITEM_GLM_MLE(Y, X, V);
  sig2_ub = (n/(n-p)) * sig2_est;
 
 % Init progress bar
