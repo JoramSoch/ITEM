@@ -13,7 +13,7 @@ function ITEM_review(SPM, step, what)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 04/12/2018, 13:10 (V0.1)
-%  Last edit: 22/03/2018, 12:30 (V0.1)
+%  Last edit: 08/05/2019, 17:05 (V0.1)
 
 
 %=========================================================================%
@@ -73,7 +73,7 @@ end;
 if nargin < 3 || isempty(what)
     if strcmp(step, 'est-1st-lvl')
         list  = {'design matrices', 'induced covariance'};
-        whats = {'des-mat', 'ind-cov', 'cov-mat'};
+        whats = {'des-mat', 'ind-cov'};
     end;
     if strcmp(step, 'est-2nd-lvl')
         list  = {'covariance matrices', 'covariance components'};
@@ -128,22 +128,32 @@ if strcmp(step, 'est-1st-lvl')
     %---------------------------------------------------------------------%
     if strcmp(what,'des-mat')
         figure('Name', 'ITEM_est_1st_lvl: design matrices', 'Color', [1 1 1], 'Position', [50 50 1600 900]);
+        colormap gray;
         for h = 1:s
+            % extract matrices
+            X  = GLM1.Sess(h).X*GLM1.Sess(h).T;
+            Xt = GLM1.Sess(h).X;
+            T  = GLM1.Sess(h).T;
             % standard design matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+1+4*(h>csd2));
-            imagesc(GLM1.Sess(h).X*GLM1.Sess(h).T);
+            imagesc(X);
+            caxis([-max(max(abs(X))), +max(max(abs(X)))]);
             axis off;
             title(sprintf('S%d: X = X_t T', h), 'FontSize', 12);
             % first-level (scan-wise) design matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+2+4*(h>csd2));
-            imagesc(GLM1.Sess(h).X);
+            imagesc(Xt);
+            caxis([-1, +1]);
             axis off;
             title(sprintf('X_t [%d x %d]', GLM1.n(h), GLM1.tr(h)), 'FontSize', 12);
             % second-level (trial-wise) design matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+3+4*(h>csd2));
-            imagesc(GLM1.Sess(h).T);
+            imagesc(T);
+            caxis([-1, +1]);
             axis off;
             title(sprintf('T_{ } [%d x %d]', GLM1.tr(h), GLM1.pr(h)), 'FontSize', 12);
+            % delete matrices
+            clear X Xt T
         end;
     end;
     
@@ -151,22 +161,33 @@ if strcmp(step, 'est-1st-lvl')
     %---------------------------------------------------------------------%
     if strcmp(what,'ind-cov')
         figure('Name', 'ITEM_est_1st_lvl: induced covariance', 'Color', [1 1 1], 'Position', [50 50 1600 900]);
+        colormap jet;
         for h = 1:s
+            % extract matrices
+            Xt = GLM1.Sess(h).X;
+            V  = GLM1.Sess(h).V;
+            Ui = inv(GLM1.Sess(h).U);
+            um = max(max(abs(Ui(1:GLM1.t(h),1:GLM1.t(h)))));
             % trial-wise design matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+1+4*(h>csd2));
-            imagesc(GLM1.Sess(h).X);
+            imagesc(Xt);
+            caxis([-1, +1]);
             axis off;
             title(sprintf('S%d: X_t [%d x %d]', h, GLM1.n(h), GLM1.tr(h)), 'FontSize', 12);
             % temporal covariance matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+2+4*(h>csd2));
-            imagesc(GLM1.Sess(h).V);
+            imagesc(V);
+            caxis([0, +1]);
             axis square off;
             title(sprintf('V_{ } [%d x %d]', GLM1.n(h), GLM1.n(h)), 'FontSize', 12);
             % variance-covariance matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+3+4*(h>csd2));
-            imagesc(GLM1.Sess(h).U);
+            imagesc(Ui);
+            caxis([-um, +um]);
             axis square off;
-            title('U = (X_t^T V^{-1} X_t)^{-1}', 'FontSize', 12);
+            title('U^{-1} = X_t^T V^{-1} X_t', 'FontSize', 12);
+            % delete matrices
+            clear Xt V Ui um
         end;
     end;
     
@@ -348,7 +369,7 @@ if strcmp(step, 'dec-recon')
         hold on;
         bar([-1,0], [mean(CC); mean(CC)], 'grouped');
         bar([1:s], CC, 'grouped');
-        axis([-0.5, max([s+0.5, 10.5]), 0, 1]);
+        axis([-0.5, max([s+0.5, 10.5]), -1, +1]);
         grid on;
         set(gca,'Box', 'On');
         set(gca,'XTick', [0, 1:s], 'XTickLabel', [{'avg'}, cellstr(num2str([1:s]'))']);
