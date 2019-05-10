@@ -10,8 +10,8 @@ function ITEM_dec_class(SPM, ROI, c, con, reg)
 %     reg - a string without spaces describing the region (e.g. 'dlPFC')
 % 
 % FORMAT ITEM_dec_class(SPM, ROI, c, con, reg) performs decoding by an
-% inverted transformation encoding model for classification between
-% classes indicated by c using the voxels included in ROI.
+% inverse transformed encoding model for classification between classes
+% indicated by c using the voxels included in ROI.
 % 
 % Author: Joram Soch, BCCN Berlin
 % E-Mail: joram.soch@bccn-berlin.de
@@ -84,7 +84,7 @@ end
 %-------------------------------------------------------------------------%
 s = numel(SPM.Sess);
 
-% Load GLM.mats in sub-directory
+% Load GLM.mat in sub-directory
 %-------------------------------------------------------------------------%
 load(strcat(SPM.swd,'/','ITEM_est_1st_lvl','/','GLM1.mat'));
 
