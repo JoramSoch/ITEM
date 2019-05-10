@@ -201,22 +201,36 @@ if strcmp(step, 'est-2nd-lvl')
     %---------------------------------------------------------------------%
     if strcmp(what,'cov-mat')
         figure('Name', 'ITEM_est_2nd_lvl: covariance matrices', 'Color', [1 1 1], 'Position', [50 50 1600 900]);
+        colormap jet;
         for h = 1:s
+            % extract matrices
+            load(strcat(SPM.swd,'/','ITEM_est_1st_lvl','/','GLM1.mat'));
+            t  = GLM1.t; clear GLM1
+            V  = GLM2.Sess(h).V;
+            Q1 = GLM2.Sess(h).Q{1};
+            Q2 = GLM2.Sess(h).Q{2};
+            vm = max(max(abs(V(1:t(h),1:t(h)))));
+            um = max(max(abs(Q2(1:t(h),1:t(h)))));
             % covariance matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+1+4*(h>csd2));
-            imagesc(GLM2.Sess(h).V);
+            imagesc(V);
+            caxis([-vm, +vm]);
             axis square off;
-            title(sprintf('S%d: V_{ } [%d x %d]', h, size(GLM2.Sess(h).V)), 'FontSize', 12);
+            title(sprintf('S%d: V_{ } [%d x %d]', h, size(V)), 'FontSize', 12);
             % natural covariance
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+2+4*(h>csd2));
-            imagesc(GLM2.Sess(h).Q{1});
+            imagesc(Q1);
+            caxis([0, 1]);
             axis square off;
             title(sprintf('= %3.3f x I_t', GLM2.Sess(h).s2(1)), 'FontSize', 12);
             % induced covariance
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+3+4*(h>csd2));
-            imagesc(GLM2.Sess(h).Q{2});
+            imagesc(Q2);
+            caxis([-um, +um]);
             axis square off;
             title(sprintf('+ %3.3f x U_{ }', GLM2.Sess(h).s2(2)), 'FontSize', 12);
+            % delete matrices
+            clear V Q1 Q2 Vi Ui vm um
         end;
     end;
     
@@ -224,69 +238,118 @@ if strcmp(step, 'est-2nd-lvl')
     %---------------------------------------------------------------------%
     if strcmp(what,'cov-comp')
         figure('Name', 'ITEM_est_2nd_lvl: covariance components', 'Color', [1 1 1], 'Position', [50 50 1600 900]);
+        colormap jet;
+        % extract matrices
+        load(strcat(SPM.swd,'/','ITEM_est_1st_lvl','/','GLM1.mat'));
+        t  = GLM1.t; clear GLM1
+        Q1 = GLM2.Sess(1).Q{1};
+        Q2 = GLM2.Sess(1).Q{2};
+        um = max(max(abs(Q2(1:t(1),1:t(1)))));
         % natural covariance
         subplot(1,2,1);
-        imagesc(GLM2.Sess(1).Q{1});
+        imagesc(Q1);
+        caxis([0, 1]);
         axis square off;
-        title(sprintf('Q_1 = I_t [%d x %d]', size(GLM2.Sess(1).Q{1})), 'FontSize', 12);
+        title(sprintf('Session 1: Q_1 = I_t [%d x %d]', size(Q1)), 'FontSize', 12);
         % induced covariance
         subplot(1,2,2);
-        imagesc(GLM2.Sess(1).Q{2});
+        imagesc(Q2);
+        caxis([-um, +um]);
         axis square off;
-        title(sprintf('Q_2 = U_{ } [%d x %d]', size(GLM2.Sess(1).Q{2})), 'FontSize', 12);
+        title(sprintf('Session 1: Q_2 = U_{ } [%d x %d]', size(Q2)), 'FontSize', 12);
+        % delete matrices
+        clear Q1 Q2 um
     end;
     
 end;
 
-% Case: decode by classification
+% Cases: decode by classification or reconstruction
 %-------------------------------------------------------------------------%
-if strcmp(step, 'dec-class')
+if strcmp(step, 'dec-class') || strcmp(step, 'dec-recon')
     
     % Display inverted model
     %---------------------------------------------------------------------%
     if strcmp(what,'inv-mod')
-        figure('Name', 'ITEM_dec_class: inverted model', 'Color', [1 1 1], 'Position', [50 50 1600 900]);
+        figure('Name', sprintf('ITEM_dec_%s: inverted model', step(5:end)), 'Color', [1 1 1], 'Position', [50 50 1600 900]);
+        colormap jet;
         for h = 1:s
+            % extract matrices
+            load(strcat(SPM.swd,'/','ITEM_est_1st_lvl','/','GLM1.mat'));
+            t  = GLM1.t; clear GLM1
+            Y  = ITEM.Sess(h).Y;
+            X  = ITEM.Sess(h).X;
+            V  = ITEM.Sess(h).V;
+            xm = max(max(abs(X(1:end-1,:))));
+            vm = max(max(abs(V(1:t(h),1:t(h)))));
             % data matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+1+4*(h>csd2));
-            imagesc(ITEM.Sess(h).Y);
+            imagesc(Y);
+            caxis([-1, +1]);
             axis off;
-            title(sprintf('S%d: "data" T [%d x %d]', h, size(ITEM.Sess(h).Y)), 'FontSize', 12);
+            title(sprintf('S%d: "data" T [%d x %d]', h, size(Y)), 'FontSize', 12);
             % design matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+2+4*(h>csd2));
-            imagesc(ITEM.Sess(h).X);
+            imagesc(X);
+            caxis([-xm, +xm]);
             axis off;
-            title(['"design" \Gamma', sprintf(' [%d x %d]', size(ITEM.Sess(h).X))], 'FontSize', 12);
+            title(['"design" \Gamma', sprintf(' [%d x %d]', size(X))], 'FontSize', 12);
             % covariance matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+3+4*(h>csd2));
-            imagesc(ITEM.Sess(h).V);
+            imagesc(V);
+            caxis([-vm, +vm]);
             axis square off;
-            title(['"covariance" U', sprintf(' [%d x %d]', size(ITEM.Sess(h).V))], 'FontSize', 12);
+            title(['"covariance" U', sprintf(' [%d x %d]', size(V))], 'FontSize', 12);
+            % delete matrices
+            clear Y X V xm vm
         end;
     end;
     
     % Display model inversion
     %---------------------------------------------------------------------%
     if strcmp(what,'mod-inv')
-        figure('Name', 'ITEM_dec_class: model inversion', 'Color', [1 1 1], 'Position', [50 50 1600 900]);
+        figure('Name', sprintf('ITEM_dec_%s: model inversion', step(5:end)), 'Color', [1 1 1], 'Position', [50 50 1600 900]);
+        colormap gray;
         for h = 1:s
+            % extract matrices
+            Yp = ITEM.Sess(h).Yp;
+            if strcmp(step, 'dec-class'), Yc = ITEM.Sess(h).Yc; end;
+            if strcmp(step, 'dec-recon'), Yr = ITEM.Sess(h).Yr; end;
+            Yt = ITEM.Sess(h).Yt;
+            mp = max(max(abs(Yp(1:end-1,1:end-1))));
             % predicted design matrix
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+1+4*(h>csd2));
-            imagesc(ITEM.Sess(h).Yp);
-            axis off;
+            imagesc(Yp);
+            caxis([-mp, +mp]);
+            set(gca,'Box','On');
+            set(gca,'XTick',[],'YTick',[]);
             title(sprintf('S%d: predicted DM', h), 'FontSize', 12);
             % classified conditions
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+2+4*(h>csd2));
-            imagesc(ITEM.Sess(h).Yc);
-            axis off;
-            title('classfied conditions', 'FontSize', 12);
+            if strcmp(step, 'dec-class'), imagesc(Yc); end;
+            if strcmp(step, 'dec-recon'), imagesc(Yr); end;
+            caxis([-1, +1]);
+            set(gca,'Box','On');
+            set(gca,'XTick',[],'YTick',[]);
+            if strcmp(step, 'dec-class'), title('classfied conditions', 'FontSize', 12);    end;
+            if strcmp(step, 'dec-recon'), title('reconstructed variables', 'FontSize', 12); end;
             % true conditions
             subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+3+4*(h>csd2));
-            imagesc(ITEM.Sess(h).Yt);
-            axis off;
-            title('true conditions', 'FontSize', 12);
+            imagesc(Yt);
+            caxis([-1, +1]);
+            set(gca,'Box','On');
+            set(gca,'XTick',[],'YTick',[]);
+            if strcmp(step, 'dec-class'), title('true conditions', 'FontSize', 12); end;
+            if strcmp(step, 'dec-recon'), title('true variables', 'FontSize', 12);  end;
+            % delete matrices
+            clear Yp Yc Yr Yt mp
         end;
     end;
+    
+end;
+    
+% Case: decode by classification
+%-------------------------------------------------------------------------%
+if strcmp(step, 'dec-class')
     
     % Display decoding accuracies
     %---------------------------------------------------------------------%
@@ -313,52 +376,6 @@ end;
 % Case: decode by reconstruction
 %-------------------------------------------------------------------------%
 if strcmp(step, 'dec-recon')
-    
-    % Display inverted model
-    %---------------------------------------------------------------------%
-    if strcmp(what,'inv-mod')
-        figure('Name', 'ITEM_dec_recon: inverted model', 'Color', [1 1 1], 'Position', [50 50 1600 900]);
-        for h = 1:s
-            % data matrix
-            subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+1+4*(h>csd2));
-            imagesc(ITEM.Sess(h).Y);
-            axis off;
-            title(sprintf('S%d: "data" T [%d x %d]', h, size(ITEM.Sess(h).Y)), 'FontSize', 12);
-            % design matrix
-            subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+2+4*(h>csd2));
-            imagesc(ITEM.Sess(h).X);
-            axis off;
-            title(['"design" \Gamma', sprintf(' [%d x %d]', size(ITEM.Sess(h).X))], 'FontSize', 12);
-            % covariance matrix
-            subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+3+4*(h>csd2));
-            imagesc(ITEM.Sess(h).V);
-            axis square off;
-            title(['"covariance" U', sprintf(' [%d x %d]', size(ITEM.Sess(h).V))], 'FontSize', 12);
-        end;
-    end;
-    
-    % Display model inversion
-    %---------------------------------------------------------------------%
-    if strcmp(what,'mod-inv')
-        figure('Name', 'ITEM_dec_recon: model inversion', 'Color', [1 1 1], 'Position', [50 50 1600 900]);
-        for h = 1:s
-            % predicted design matrix
-            subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+1+4*(h>csd2));
-            imagesc(ITEM.Sess(h).Yp);
-            axis off;
-            title(sprintf('S%d: predicted DM', h), 'FontSize', 12);
-            % classified conditions
-            subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+2+4*(h>csd2));
-            imagesc(ITEM.Sess(h).Yr);
-            axis off;
-            title('reconstructed variables', 'FontSize', 12);
-            % true conditions
-            subplot(csd2, 7, (mod(h,csd2)+csd2*(mod(h,csd2)==0)-1)*7+3+4*(h>csd2));
-            imagesc(ITEM.Sess(h).Yt);
-            axis off;
-            title('true variables', 'FontSize', 12);
-        end;
-    end;
     
     % Display correlation coefficients
     %---------------------------------------------------------------------%
