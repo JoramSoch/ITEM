@@ -16,7 +16,7 @@ function ITEM_dec_class_SL(SPM, rad, c, con)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 10/05/2019, 11:15 (V0.2)
-%  Last edit: 10/05/2019, 14:20 (V0.2)
+%  Last edit: 13/05/2019, 11:50 (V0.2)
 
 
 %=========================================================================%
@@ -233,7 +233,7 @@ Finter = spm('FigName','ITEM_dec_class_SL: save');
 % Initialize image files
 %-------------------------------------------------------------------------%
 H = MA_init_header(SPM, false);
-ITEM.swd = strcat(SPM.swd,'/','ITEM_dec_class','/','ITEM_',con,'_',num2str(rad),'mm','/');
+ITEM.swd = strcat(SPM.swd,'/','ITEM_dec_class','/','ITEM_',con,'_SL-',num2str(rad),'mm','/');
 if ~exist(ITEM.swd,'dir'), mkdir(ITEM.swd); end;
 cd(ITEM.swd);
 

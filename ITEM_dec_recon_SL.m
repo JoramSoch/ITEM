@@ -16,7 +16,7 @@ function ITEM_dec_recon_SL(SPM, rad, c, con)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 10/05/2019, 14:50 (V0.2)
-%  Last edit: 
+%  Last edit: 13/05/2019, 11:45 (V0.2)
 
 
 %=========================================================================%
@@ -238,7 +238,7 @@ Finter = spm('FigName','ITEM_dec_recon_SL: save');
 % Initialize image files
 %-------------------------------------------------------------------------%
 H = MA_init_header(SPM, false);
-ITEM.swd = strcat(SPM.swd,'/','ITEM_dec_recon','/','ITEM_',con,'_',num2str(rad),'mm','/');
+ITEM.swd = strcat(SPM.swd,'/','ITEM_dec_recon','/','ITEM_',con,'_SL-',num2str(rad),'mm','/');
 if ~exist(ITEM.swd,'dir'), mkdir(ITEM.swd); end;
 cd(ITEM.swd);
 
@@ -263,6 +263,13 @@ for k = 1:q
     spm_write_vol(H,reshape(cvCC(k,:),m_dim));
     ITEM.VcvCC = H;
 end;
+
+% Save voxels per searchlight
+%-------------------------------------------------------------------------%
+H.fname   = strcat('VpSL.nii');
+H.descrip = sprintf('ITEM_dec_recon_SL: voxels per searchlight; %s mm radius', num2str(rad));
+spm_write_vol(H,reshape(VpSL,m_dim));
+ITEM.VVpSL = H;
 
 % Complete ITEM structure
 %-------------------------------------------------------------------------%
