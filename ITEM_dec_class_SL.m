@@ -103,7 +103,7 @@ d = floor(v/100);
 
 % Init progress bar
 %-------------------------------------------------------------------------%
-Finter = spm('FigName','ITEM_dec_class_SL: estimate(1)');
+Finter = spm('FigName','ITEM_dec_class_SL: estimate (1)');
 spm_progress_bar('Init', 100, 'Determine searchlight voxels...', '');
 
 % Get voxels per searchlight
@@ -124,6 +124,7 @@ for j = 1:v
     vXv(v2v_ind,v2v_ind) = true;            % all voxel-pairs in this SL
     if mod(j,d) == 0, spm_progress_bar('Set',(j/v)*100); end;
 end;
+clear m_xyz
 
 % Clear progress bar
 %-------------------------------------------------------------------------%
