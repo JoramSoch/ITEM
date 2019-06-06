@@ -17,7 +17,7 @@ function ITEM_dec_recon(SPM, ROI, c, con, reg)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 30/11/2018, 09:10 (V0.1)
-%  Last edit: 22/03/2018, 11:40 (V0.2)
+%  Last edit: 17/05/2019, 12:35 (V0.2)
 
 
 %=========================================================================%
@@ -45,10 +45,10 @@ end;
 if nargin < 3 || isempty(c)
     c = zeros(1,0);
     k = 0;
-    while isempty(c) && k < numel(SPM.Sess(1).U(1))
+    while isempty(c) && k < numel(SPM.Sess(1).U)
     	k = k + 1;
         if ~strcmp(SPM.Sess(1).U(k).P(1).name,'none')
-            c(1,1) = SPM.Sess(1).U(k).P(1).i(2);
+            c(1,SPM.Sess(1).U(k).P(1).i(2)) = 1;
         end;
     end;
     if isempty(c)

@@ -16,7 +16,7 @@ function ITEM_dec_recon_SL(SPM, rad, c, con)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 10/05/2019, 14:50 (V0.2)
-%  Last edit: 13/05/2019, 11:45 (V0.2)
+%  Last edit: 17/05/2019, 11:50 (V0.2)
 
 
 %=========================================================================%
@@ -275,8 +275,8 @@ ITEM.VVpSL = H;
 % Complete ITEM structure
 %-------------------------------------------------------------------------%
 ITEM.rad       = rad;
-ITEM.Class.c   = c;
-ITEM.Class.con = con;
+ITEM.Recon.c   = c;
+ITEM.Recon.con = con;
 
 % Save ITEM structure
 %-------------------------------------------------------------------------%
