@@ -1,21 +1,22 @@
-function ITEM_est_1st_lvl(SPM, mode, nind)
+function ITEM_est_1st_lvl(SPM, mode, nind, tmap)
 % _
 % Estimate First-Level (Scan-Wise) Model
-% FORMAT ITEM_est_1st_lvl(SPM, mode, nind)
+% FORMAT ITEM_est_1st_lvl(SPM, mode, nind, tmap)
 %     SPM  - a structure specifying an estimated GLM
 %     mode - a string indicating how to handle filter regressors
 %     nind - a vector indexing non-trial-wise nuisance conditions
+%     tmap - a logical indicating calculation of trial-wise t-maps
 % 
-% FORMAT ITEM_est_1st_lvl(SPM, mode, nind) calculates trial-wise parameter
-% estimates for a first-level (scan-wise) GLM which uses a trial-wise
-% design matrix with one HRF regressor per trial, plus some augmentation
-% to handle nuisance conditions and regressors of no interest.
+% FORMAT ITEM_est_1st_lvl(SPM, mode, nind, tmap) calculates trial-wise
+% parameter estimates for a first-level (scan-wise) GLM which uses a
+% trial-wise design matrix with one HRF regressor per trial, plus some
+% augmentation to handle nuisance conditions and regressors of no interest.
 % 
 % Author: Joram Soch, BCCN Berlin
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 22/11/2018, 08:20 (V0.1)
-%  Last edit: 20/12/2018, 06:00 (V0.1)
+%  Last edit: 27/09/2019, 05:00 (V0.2)
 
 
 %=========================================================================%
@@ -48,6 +49,10 @@ if nargin < 2 || isempty(mode), mode = 'DCT'; end;
 % Set nuisance conditions if necessary
 %-------------------------------------------------------------------------%
 if nargin < 3 || isempty(nind), nind = []; end;
+
+% Set t-statistic maps if necessary
+%-------------------------------------------------------------------------%
+if nargin < 4 || isempty(tmap), tmap = false; end;
 
 % Change to SPM.swd if specified
 %-------------------------------------------------------------------------%
@@ -272,6 +277,9 @@ Finter = spm('FigName','ITEM_est_1st_lvl: estimate (2)');
 %-------------------------------------------------------------------------%
 G  = NaN(sum(GLM1.tr),prod(m_dim));
 S2 = NaN(numel(SPM.Sess),prod(m_dim));
+if tmap
+    T = NaN(sum(GLM1.tr),prod(m_dim));
+end;
 
 % Estimate parameters of first-level model
 %-------------------------------------------------------------------------%
@@ -293,6 +301,21 @@ for h = 1:numel(SPM.Sess)
     % Estimate parameters
     %---------------------------------------------------------------------%
     [G(GLM1.Sess(h).t,m_ind), S2(h,m_ind)] = ITEM_GLM_MLE(Yh, Xh, Vh, sprintf('Estimate trial-wise response amplitudes for session %d',h));
+    
+    % Calculate statistics
+    %---------------------------------------------------------------------%
+    if tmap
+        spm_progress_bar('Init', 100, sprintf('Estimate trial-wise t-statistics for session %d',h), '');
+        for k = 1:GLM1.tr(h)
+            c       = zeros(GLM1.tr(h),1);
+            c(k)    = 1;                                % contrast
+            c_cov_c = c'*GLM1.Sess(h).U*c;              % denonimator
+            con_est = c'*G(GLM1.Sess(h).t,m_ind);       % numerator
+            T(GLM1.Sess(h).t(k),m_ind) = con_est ./ sqrt(S2(h,m_ind) * c_cov_c);
+            spm_progress_bar('Set', (k/GLM1.tr(h))*100);
+        end;
+        spm_progress_bar('Clear');
+    end;
     
 end;
 
@@ -335,6 +358,22 @@ for h = 1:numel(SPM.Sess)
     spm_write_vol(H,reshape(S2(h,:),m_dim));
     GLM1.Vsigma(h) = H;
     spm_progress_bar('Set',(h/s)*100);
+end;
+
+% Save t-statistics
+%-------------------------------------------------------------------------%
+if tmap
+    d = ceil(sum(GLM1.tr)/100);
+    for h = 1:numel(SPM.Sess)
+        for k = 1:GLM1.tr(h)
+            i = GLM1.Sess(h).t(k);
+            H.fname   = strcat('tstat_',MF_int2str0(i,4),'.nii');
+            H.descrip = sprintf('ITEM_est_1st_lvl: t-statistic; session %d, trial %d', h, k);
+            spm_write_vol(H,reshape(T(i,:),m_dim));
+            GLM1.Vtstat(i) = H;
+            if mod(i,d) == 0, spm_progress_bar('Set',(i/sum(GLM1.tr))*100); end;
+        end;
+    end;
 end;
 
 % Save GLM structure
