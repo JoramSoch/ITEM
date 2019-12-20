@@ -16,7 +16,7 @@ function ITEM_dec_recon_SL(SPM, rad, c, con)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 10/05/2019, 14:50 (V0.2)
-%  Last edit: 17/05/2019, 11:50 (V0.2)
+%  Last edit: 20/12/2019, 15:05 (V0.2)
 
 
 %=========================================================================%
@@ -252,7 +252,7 @@ for h = 1:s
         H.fname   = strcat('oosCC_',MF_int2str0(i(k),4),'_S',MF_int2str0(h,d),'.nii');
         H.descrip = sprintf('ITEM_dec_recon_SL: out-of-sample correlation coefficient; session %d, regressor %d', h, i(k));
         spm_write_vol(H,reshape(oosCC(k,:,h),m_dim));
-        ITEM.VoosCC(h) = H;
+        ITEM.VoosCC(h,k) = H;
     end;
 end;
 
