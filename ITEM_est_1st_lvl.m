@@ -16,7 +16,7 @@ function ITEM_est_1st_lvl(SPM, mode, nind, tmap)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 22/11/2018, 08:20 (V0.1)
-%  Last edit: 27/09/2019, 05:00 (V0.2)
+%  Last edit: 20/12/2019, 15:10 (V0.2)
 
 
 %=========================================================================%
@@ -44,7 +44,7 @@ end;
 
 % Set estimation mode if necessary
 %-------------------------------------------------------------------------%
-if nargin < 2 || isempty(mode), mode = 'DCT'; end;
+if nargin < 2 || isempty(mode), mode = 'KXY'; end;
 
 % Set nuisance conditions if necessary
 %-------------------------------------------------------------------------%
