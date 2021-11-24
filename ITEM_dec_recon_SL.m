@@ -16,7 +16,7 @@ function ITEM_dec_recon_SL(SPM, rad, c, con)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 10/05/2019, 14:50 (V0.2)
-%  Last edit: 20/12/2019, 15:05 (V0.2)
+%  Last edit: 24/11/2021, 17:10 (V0.3)
 
 
 %=========================================================================%
@@ -58,7 +58,7 @@ end;
 % Set contrast name if necessary
 %-------------------------------------------------------------------------%
 if nargin < 4 || isempty(con)
-    if size(c,1) > 1, d = sum(c,1); else d = c; end;
+    if size(c,1) > 1, d = sum(c,1); else, d = c; end;
     con = '';
     ind = find(d);
     for l = 1:numel(ind)
@@ -91,8 +91,8 @@ Finter = spm('FigName','ITEM_dec_recon_SL: load');
 
 % Load mask image
 %-------------------------------------------------------------------------%
-[M m_dim m_ind] = MA_load_mask(SPM);
-[m_img m_xyz]   = spm_read_vols(SPM.VM);
+[M, m_dim, m_ind] = MA_load_mask(SPM);
+[m_img, m_xyz]    = spm_read_vols(SPM.VM);
 clear m_img
 
 % Load gamma estimates
@@ -113,23 +113,17 @@ spm_progress_bar('Init', 100, 'Determine searchlight voxels...', '');
 
 % Get voxels per searchlight
 %-------------------------------------------------------------------------%
-v2v   = false(v,v);
-vXv   = false(v,v);
-% NOTE: The logical matrix "v2v" indicates whether a voxel (column) belongs
-%       to the searchlight around a voxel (row). The logical matrix "vXv"
-%       indicates whether there is a searchlight that two voxels (column/
-%       row) both belong to.
-VpSL  = NaN(size(M));
-xyz   = m_xyz(:,m_ind);
+SLs  = cell(v,1);
+VpSL = NaN(size(M));
+XYZ  = m_xyz(:,m_ind);
 for j = 1:v
     xyz_cent = m_xyz(:,m_ind(j));
-    v2v_ind  = find(sqrt(sum((xyz - repmat(xyz_cent,[1 v])).^2)) <= rad);
-    v2v(j,v2v_ind) = true;                  % voxels belonging to one SL
-    VpSL(m_ind(j)) = numel(v2v_ind);        % number of voxels in this SL
-    vXv(v2v_ind,v2v_ind) = true;            % all voxel-pairs in this SL
+    vox_ind  = find(sqrt(sum((XYZ - repmat(xyz_cent,[1 v])).^2)) <= rad);
+    SLs{j}   = vox_ind;
+    VpSL(m_ind(j)) = numel(vox_ind);
     if mod(j,d) == 0, spm_progress_bar('Set',(j/v)*100); end;
 end;
-clear m_xyz
+clear xyz_cent vox_ind
 
 % Clear progress bar
 %-------------------------------------------------------------------------%
@@ -219,7 +213,7 @@ for g = 1:s
     
     % Perform searchlight-based ITEM analysis
     %---------------------------------------------------------------------%
-    oosCC(:,m_ind,g) = ITEM_ITEM_SL(Y_in, X_in, V_in, Y_out, X_out, V_out, v2v, vXv, 'recon', sprintf('Searchlight-based reconstruction of session %d',g));
+    oosCC(:,m_ind,g) = ITEM_ITEM_SL(Y_in, X_in, V_in, Y_out, X_out, V_out, SLs, 'recon', sprintf('Searchlight-based reconstruction of session %d',g));
     
 end;
 
@@ -275,6 +269,7 @@ ITEM.VVpSL = H;
 % Complete ITEM structure
 %-------------------------------------------------------------------------%
 ITEM.rad       = rad;
+ITEM.SLs       = SLs;
 ITEM.Recon.c   = c;
 ITEM.Recon.con = con;
 
