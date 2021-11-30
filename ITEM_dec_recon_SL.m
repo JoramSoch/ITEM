@@ -187,10 +187,6 @@ end;
 %-------------------------------------------------------------------------%
 Finter = spm('FigName','ITEM_dec_recon_SL: estimate (3)');
 
-% Preallocate (out-of-sample) correlation coefficients
-%-------------------------------------------------------------------------%
-oosCC = NaN(q,numel(M),s);
-
 % Cycle through cross-validation folds
 %-------------------------------------------------------------------------%
 for g = 1:s
@@ -214,13 +210,64 @@ for g = 1:s
     
     % Perform searchlight-based ITEM analysis
     %---------------------------------------------------------------------%
-    oosCC(:,m_ind,g) = ITEM_ITEM_SL(Y_in, X_in, V_in, Y_out, X_out, V_out, SLs, 'recon', sprintf('Searchlight-based reconstruction of session %d',g));
+    ITEM.Sess(g).Yp = ITEM_ITEM_SL(Y_in, X_in, V_in, Y_out, X_out, V_out, SLs, 'recon', sprintf('Searchlight-based reconstruction of session %d',g));
+    clear Y_in X_in V_in Y_out X_out V_out
     
 end;
 
-% Calculate (cross-validated) correlation coefficient
+% Remove data matrix from ITEM structure
 %-------------------------------------------------------------------------%
-cvCC = mean(oosCC,3);
+ITEM.Sess = rmfield(ITEM.Sess,'X');
+ITEM.Sess = rmfield(ITEM.Sess,'V');
+
+
+%=========================================================================%
+% E S T I M A T I O N   ( 4 ) :   D E C O D I N G   A C C U R A C Y       %
+%=========================================================================%
+
+% Init progress bar
+%-------------------------------------------------------------------------%
+Finter = spm('FigName','ITEM_dec_recon_SL: estimate (4)');
+
+% Preallocate oos & cv correlation coefficients
+%-------------------------------------------------------------------------%
+oosCC = NaN(q,numel(M),s);
+cvCC  = NaN(q,numel(M));
+
+% Calculate out-of-sample correlation coefficients
+%-------------------------------------------------------------------------%
+for g = 1:s
+    Y_true  = ITEM.Sess(g).Y;
+    Y_recon = ITEM.Sess(g).Yp;
+    for k = 1:q
+        spm_progress_bar('Init', 100, sprintf('Calculate correlation coefficient for session %d, variable %d',g,k), '');
+        i_eff = find(Y_true(:,k)~=0)';
+        for j = 1:v
+            oosCC(k,m_ind(j),g) = corr(Y_true(i_eff,k),Y_recon(i_eff,k,j));
+            if mod(j,d) == 0, spm_progress_bar('Set',(j/v)*100); end;
+        end;
+    end;
+end;
+avgCC = mean(oosCC,3);
+clear Y_true Y_recon i_eff
+
+% Calculate cross-validated correlation coefficients
+%-------------------------------------------------------------------------%
+Y_true  = vertcat(ITEM.Sess(1:s).Y);
+Y_recon = vertcat(ITEM.Sess(1:s).Yp);
+for k = 1:q
+    spm_progress_bar('Init', 100, sprintf('Calculate correlation coefficient across all sessions, variable %d',k), '');
+    i_eff = find(Y_true(:,k)~=0)';
+    for j = 1:v
+        cvCC(k,m_ind(j)) = corr(Y_true(i_eff,k),Y_recon(i_eff,k,j));
+        if mod(j,d) == 0, spm_progress_bar('Set',(j/v)*100); end;
+    end;
+end;
+clear Y_true Y_recon i_eff
+
+% Clear progress bar
+%-------------------------------------------------------------------------%
+spm_progress_bar('Clear');
 
 
 %=========================================================================%
@@ -251,13 +298,22 @@ for h = 1:s
     end;
 end;
 
-% Save cross-validated correlation
+% Save averaged correlations
+%-------------------------------------------------------------------------%
+for k = 1:q
+    H.fname   = strcat('avgCC_',MF_int2str0(i(k),4),'.nii');
+    H.descrip = sprintf('ITEM_dec_recon_SL: averaged correlation coefficient; %d sessions, regressor %d', s, i(k));
+    spm_write_vol(H,reshape(avgCC(k,:),m_dim));
+    ITEM.VavgCC(1,k) = H;
+end;
+
+% Save cross-validated correlations
 %-------------------------------------------------------------------------%
 for k = 1:q
     H.fname   = strcat('cvCC_',MF_int2str0(i(k),4),'.nii');
     H.descrip = sprintf('ITEM_dec_recon_SL: cross-validated correlation coefficient; %d sessions, regressor %d', s, i(k));
     spm_write_vol(H,reshape(cvCC(k,:),m_dim));
-    ITEM.VcvCC = H;
+    ITEM.VcvCC(1,k) = H;
 end;
 
 % Save voxels per searchlight

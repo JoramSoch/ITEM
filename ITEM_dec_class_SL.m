@@ -16,7 +16,7 @@ function ITEM_dec_class_SL(SPM, rad, c, con)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 10/05/2019, 11:15 (V0.2)
-%  Last edit: 30/11/2021, 12:12 (V0.3)
+%  Last edit: 30/11/2021, 14:21 (V0.3)
 
 
 %=========================================================================%
@@ -182,10 +182,6 @@ end;
 %-------------------------------------------------------------------------%
 Finter = spm('FigName','ITEM_dec_class_SL: estimate (3)');
 
-% Preallocate (out-of-sample) decoding accuracy
-%-------------------------------------------------------------------------%
-oosDA = NaN(s,numel(M));
-
 % Cycle through cross-validation folds
 %-------------------------------------------------------------------------%
 for g = 1:s
@@ -209,13 +205,70 @@ for g = 1:s
     
     % Perform searchlight-based ITEM analysis
     %---------------------------------------------------------------------%
-    oosDA(g,m_ind) = ITEM_ITEM_SL(Y_in, X_in, V_in, Y_out, X_out, V_out, SLs, 'class', sprintf('Searchlight-based classification for session %d',g));
+    ITEM.Sess(g).Yp = ITEM_ITEM_SL(Y_in, X_in, V_in, Y_out, X_out, V_out, SLs, 'class', sprintf('Searchlight-based classification for session %d',g));
+    clear Y_in X_in V_in Y_out X_out V_out
     
 end;
 
-% Calculate (cross-validated) decoding accuracy
+% Remove data matrix from ITEM structure
 %-------------------------------------------------------------------------%
-cvDA = mean(oosDA,1);
+ITEM.Sess = rmfield(ITEM.Sess,'X');
+ITEM.Sess = rmfield(ITEM.Sess,'V');
+
+
+%=========================================================================%
+% E S T I M A T I O N   ( 4 ) :   D E C O D I N G   A C C U R A C Y       %
+%=========================================================================%
+
+% Init progress bar
+%-------------------------------------------------------------------------%
+Finter = spm('FigName','ITEM_dec_class_SL: estimate (3)');
+
+% Preallocate oos & cv decoding accuracies
+%-------------------------------------------------------------------------%
+oosDA = NaN(1,numel(M),s);
+cvDA  = NaN(1,numel(M));
+
+% Calculate out-of-sample decoding accuracies
+%-------------------------------------------------------------------------%
+for g = 1:s
+    spm_progress_bar('Init', 100, sprintf('Calculate decoding accuracy for session %d',g), '');
+    Y_true  = ITEM.Sess(g).Y;
+    Y_class = ITEM.Sess(g).Yp;
+    i_eff   = find(sum(Y_true,2)>0)';
+    t_eff   = numel(i_eff);
+    for j = 1:v
+        for i = i_eff
+            k = find(Y_class(i,1:q,j)==max(Y_class(i,1:q,j)));
+            Y_class(i,k,j) = 1;
+        end;
+        oosDA(1,m_ind(j),g) = (1/t_eff) * sum(diag(Y_true'*Y_class(:,:,j)));
+        if mod(j,d) == 0, spm_progress_bar('Set',(j/v)*100); end;
+    end;
+end;
+avgDA = mean(oosDA,3);
+clear Y_true Y_class i_eff t_eff
+
+% Calculate cross-validated decoding accuracy
+%-------------------------------------------------------------------------%
+spm_progress_bar('Init', 100, 'Calculate decoding accuracy across all sessions', '');
+Y_true  = vertcat(ITEM.Sess(1:s).Y);
+Y_class = vertcat(ITEM.Sess(1:s).Yp);
+i_eff   = find(sum(Y_true,2)>0)';
+t_eff   = numel(i_eff);
+for j = 1:v
+    for i = i_eff
+        k = find(Y_class(i,1:q,j)==max(Y_class(i,1:q,j)));
+        Y_class(i,k,j) = 1;
+    end;
+    cvDA(m_ind(j)) = (1/t_eff) * sum(diag(Y_true'*Y_class(:,:,j)));
+    if mod(j,d) == 0, spm_progress_bar('Set',(j/v)*100); end;
+end;
+clear Y_true Y_class i_eff t_eff
+
+% Clear progress bar
+%-------------------------------------------------------------------------%
+spm_progress_bar('Clear');
 
 
 %=========================================================================%
@@ -239,9 +292,16 @@ d = floor(log10(s))+1;
 for h = 1:s
     H.fname   = strcat('oosDA_S',MF_int2str0(h,d),'.nii');
     H.descrip = sprintf('ITEM_dec_class_SL: out-of-sample decoding accuracy; session %d', h);
-    spm_write_vol(H,reshape(oosDA(h,:),m_dim));
-    ITEM.VoosDA(h) = H;
+    spm_write_vol(H,reshape(oosDA(1,:,h),m_dim));
+    ITEM.VoosDA(h,1) = H;
 end;
+
+% Save average accuracy
+%-------------------------------------------------------------------------%
+H.fname   = strcat('avgDA.nii');
+H.descrip = sprintf('ITEM_dec_class_SL: average decoding accuracy; %d sessions', s);
+spm_write_vol(H,reshape(avgDA,m_dim));
+ITEM.VavgDA = H;
 
 % Save cross-validated accuracy
 %-------------------------------------------------------------------------%
