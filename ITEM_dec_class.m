@@ -17,7 +17,7 @@ function ITEM_dec_class(SPM, ROI, c, con, reg)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 30/11/2018, 07:15 (V0.1)
-%  Last edit: 22/03/2018, 12:00 (V0.2)
+%  Last edit: 30/11/2021, 11:22 (V0.3)
 
 
 %=========================================================================%
@@ -118,7 +118,7 @@ Finter = spm('FigName','ITEM_dec_class: estimate (1)');
 % Augment decoding contrast if necessary
 %-------------------------------------------------------------------------%
 if size(c,1) == 1, c = [1*(c==1); 1*(c==-1)]; end;
-c = [c, zeros(size(c,1), GLM1.pr(1)-size(c,2))];
+c = [c, zeros(size(c,1), GLM1.p(1)-size(c,2))];
 q = size(c,1);
 
 % Cycle through recording sessions
@@ -127,34 +127,31 @@ for h = 1:s
     
     % "data" - the T matrix
     %---------------------------------------------------------------------%
-    Th = GLM1.Sess(h).T;
-    Yh = [];
-    for k = 1:q
-        Yh = [Yh, sum(Th(:,c(k,:)==1),2)];
-    end;
-    Yh = [Yh, Th(:,sum(c,1)==0)];
+    Th = GLM1.Sess(h).T(1:GLM1.t(h),1:GLM1.p(h));
+    Yh = Th * c';
     ITEM.Sess(h).Y = Yh;
     clear Yh Th
     
     % "design" - gamma estimates
     %---------------------------------------------------------------------%
-    Xh = [G(GLM1.Sess(h).t,:), ones(GLM1.tr(h),1)];
+    Xh = [G(GLM1.Sess(h).t(1:GLM1.t(h)),:), ones(GLM1.t(h),1)];
     ITEM.Sess(h).X = Xh;
     clear Xh
     
     % "covariance" - the U matrix
     %---------------------------------------------------------------------%
-    Yh    = G(GLM1.Sess(h).t,:);
-    Xh    = GLM1.Sess(h).T;
-    Qh{1} = eye(GLM1.tr(h));
-    Qh{2} = GLM1.Sess(h).U;
+    % Yh  = G(GLM1.Sess(h).t(1:GLM1.t(h)),:);
+    % Xh  = GLM1.Sess(h).T(1:GLM1.t(h),1:GLM1.p(h));
+    Qh{1} = eye(GLM1.t(h));
+    Qh{2} = GLM1.Sess(h).U(1:GLM1.t(h),1:GLM1.t(h));
     
     % Restricted maximum likelihood
     %---------------------------------------------------------------------%
     % [Vh, s2] = ITEM_GLM_ReML(Yh, Xh, Qh{1}, Qh{2}, sprintf('ITEM_dec_class: ReML estimation for session %d',h));
     ITEM.Sess(h).V  = Qh{2}; % Vh;
     ITEM.Sess(h).s2 = [0 1]; % s2;
-    clear Yh Xh Qh Vh s2
+    % clear Yh Xh Qh s2
+    clear Qh
     
 end;
 

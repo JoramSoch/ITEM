@@ -16,7 +16,7 @@ function ITEM_dec_class_SL(SPM, rad, c, con)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 10/05/2019, 11:15 (V0.2)
-%  Last edit: 24/11/2021, 16:59 (V0.3)
+%  Last edit: 30/11/2021, 12:12 (V0.3)
 
 
 %=========================================================================%
@@ -136,7 +136,7 @@ Finter = spm('FigName','ITEM_dec_class_SL: estimate (2)');
 % Augment decoding contrast if necessary
 %-------------------------------------------------------------------------%
 if size(c,1) == 1, c = [1*(c==1); 1*(c==-1)]; end;
-c = [c, zeros(size(c,1), GLM1.pr(1)-size(c,2))];
+c = [c, zeros(size(c,1), GLM1.p(1)-size(c,2))];
 q = size(c,1);
 
 % Cycle through recording sessions
@@ -145,30 +145,31 @@ for h = 1:s
     
     % "data" - the T matrix
     %---------------------------------------------------------------------%
-    Th = GLM1.Sess(h).T;
+    Th = GLM1.Sess(h).T(1:GLM1.t(h),1:GLM1.p(h));
     Yh = Th * c';
     ITEM.Sess(h).Y = Yh;
     clear Yh Th
     
     % "design" - gamma estimates
     %---------------------------------------------------------------------%
-    Xh = G(GLM1.Sess(h).t,:);
+    Xh = G(GLM1.Sess(h).t(1:GLM1.t(h)),:);
     ITEM.Sess(h).X = Xh;
     clear Xh
     
     % "covariance" - the U matrix
     %---------------------------------------------------------------------%
-    Yh    = G(GLM1.Sess(h).t,:);
-    Xh    = GLM1.Sess(h).T;
-    Qh{1} = eye(GLM1.tr(h));
-    Qh{2} = GLM1.Sess(h).U;
+    % Yh  = G(GLM1.Sess(h).t(1:GLM1.t(h)),:);
+    % Xh  = GLM1.Sess(h).T(1:GLM1.t(h),1:GLM1.p(h));
+    Qh{1} = eye(GLM1.t(h));
+    Qh{2} = GLM1.Sess(h).U(1:GLM1.t(h),1:GLM1.t(h));
     
     % Restricted maximum likelihood
     %---------------------------------------------------------------------%
-    % [Vh, s2] = ITEM_GLM_ReML(Yh, Xh, Qh{1}, Qh{2}, sprintf('ITEM_dec_class_SL: ReML estimation for session %d',h));
+    % [Vh, s2] = ITEM_GLM_ReML(Yh, Xh, Qh{1}, Qh{2}, sprintf('ITEM_dec_class: ReML estimation for session %d',h));
     ITEM.Sess(h).V  = Qh{2}; % Vh;
     ITEM.Sess(h).s2 = [0 1]; % s2;
-    clear Yh Xh Qh Vh s2
+    % clear Yh Xh Qh s2
+    clear Qh
     
 end;
 
