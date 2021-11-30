@@ -27,10 +27,11 @@ function Yp = ITEM_ITEM_SL(Y1, X1, V1, X2, V2, SLs, msg)
 
 % Get model dimensions
 %-------------------------------------------------------------------------%
-q = size(Y1,2);                 % number of variables
-n = size(X1,1);                 % number of data points
-v = size(X1,2);                 % number of instances
-d = floor(v/100);
+n1 = size(X1,1);                % number of data points (training)
+n2 = size(X2,1);                % number of data points (test)
+q  = size(Y1,2);                % number of variables
+v  = size(X1,2);                % number of instances
+d  = floor(v/100);
 
 % Init progress bar
 %-------------------------------------------------------------------------%
@@ -46,14 +47,14 @@ W2 = sqrtm(inv(V2));            % whitening matrix (test)           [n x n]
 
 % Calculate auxiliary variables
 %-------------------------------------------------------------------------%
-X1  =[X1, ones(n,1)];           % augmented design matrix           [n x v]
+X1  =[X1, ones(n1,1)];          % augmented design matrix           [n x v]
+X2  =[X2, ones(n2,1)];          % augmented design matrix           [n x v]
 PX  = P1 * X1;                  % precision times design            [n x v]
 XPY = PX'* Y1; % = X1'* P1 * Y1 % design times data (whitened)      [v x q]
 WX  = W2 * X2;                  % whitened design matrix (test)     [n x v]
 
 % Perform decoding analysis
 %-------------------------------------------------------------------------%
-n2 = size(X2,1);
 Yp = zeros(n2,q,v);
 for j = 1:v
     vj = [SLs{j}, (v+1)];       % indices of current voxel's searchlight

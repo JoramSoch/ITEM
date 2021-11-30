@@ -197,9 +197,9 @@ for g = 1:s
     
     % Apply reconstruction weights to test data
     %---------------------------------------------------------------------%
-    Y_true  = Y_out(1:GLM1.t(g),c==1);
+    Y_true  = Y_out(1:GLM1.t(g),1:q);
     Y_pred  = W_out * X_out * B_in;
-    Y_recon = Y_pred(1:GLM1.t(g),c==1);
+    Y_recon = Y_pred;
     
     % Calculate (out-of-sample) correlation coefficients
     %---------------------------------------------------------------------%

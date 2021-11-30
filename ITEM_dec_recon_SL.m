@@ -16,7 +16,7 @@ function ITEM_dec_recon_SL(SPM, rad, c, con)
 % E-Mail: joram.soch@bccn-berlin.de
 % 
 % First edit: 10/05/2019, 14:50 (V0.2)
-%  Last edit: 30/11/2021, 12:15 (V0.3)
+%  Last edit: 30/11/2021, 15:53 (V0.3)
 
 
 %=========================================================================%
@@ -204,14 +204,13 @@ for g = 1:s
     
     % Establish (out-of-sample) test data set
     %---------------------------------------------------------------------%
-    Y_out = ITEM.Sess(g).Y;
     X_out = ITEM.Sess(g).X;
     V_out = ITEM.Sess(g).V;
     
     % Perform searchlight-based ITEM analysis
     %---------------------------------------------------------------------%
-    ITEM.Sess(g).Yp = ITEM_ITEM_SL(Y_in, X_in, V_in, Y_out, X_out, V_out, SLs, 'recon', sprintf('Searchlight-based reconstruction of session %d',g));
-    clear Y_in X_in V_in Y_out X_out V_out
+    ITEM.Sess(g).Yp = ITEM_ITEM_SL(Y_in, X_in, V_in, X_out, V_out, SLs, sprintf('Searchlight-based reconstruction of session %d',g));
+    clear Y_in X_in V_in X_out V_out
     
 end;
 
@@ -332,7 +331,7 @@ ITEM.Recon.con = con;
 
 % Save ITEM structure
 %-------------------------------------------------------------------------%
-save(strcat(ITEM.swd,'ITEM.mat'),'ITEM');
+save(strcat(ITEM.swd,'ITEM.mat'),'ITEM','-v7.3');
 
 % Return to origin
 %-------------------------------------------------------------------------%
