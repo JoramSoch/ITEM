@@ -222,7 +222,7 @@ ITEM.Sess = rmfield(ITEM.Sess,'V');
 
 % Init progress bar
 %-------------------------------------------------------------------------%
-Finter = spm('FigName','ITEM_dec_class_SL: estimate (3)');
+Finter = spm('FigName','ITEM_dec_class_SL: estimate (4)');
 
 % Preallocate oos & cv decoding accuracies
 %-------------------------------------------------------------------------%

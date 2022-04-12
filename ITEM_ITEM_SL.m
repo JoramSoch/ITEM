@@ -11,7 +11,7 @@ function Yp = ITEM_ITEM_SL(Y1, X1, V1, X2, V2, SLs, msg)
 %     SLs - a   v x 1  cell array containing searchlight indices
 %     msg - a string used as a message on the SPM progress bar
 % 
-%     Y2  - an n2 x q x v array of predictions for test data in all instances
+%     Yp  - an n2 x q x v array of predictions for test data in all instances
 % 
 % FORMAT Yp = ITEM_ITEM_SL(Y1, X1, V1, X2, V2, SLs, msg) performs an
 % ITEM-based searchlight analysis (or searchlight-based ITEM analysis)
