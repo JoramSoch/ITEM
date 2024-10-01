@@ -33,7 +33,7 @@ if nargin == 0
     return
 end;
 
-% Set region of interest if necessary
+% Set searchlight radius if necessary
 %-------------------------------------------------------------------------%
 if nargin < 2 || isempty(rad)
     rad = 2*abs(SPM.xY.VY(1).mat(1,1));
